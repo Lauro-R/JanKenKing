@@ -11,7 +11,11 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         myPhotonview = GetComponent<PhotonView>();
-        //GerarCor();
+
+        if (myPhotonview.IsMine)
+        {
+            GerarCor();
+        }
     }
 
     // Update is called once per frame
@@ -25,15 +29,17 @@ public class PlayerMovement : MonoBehaviour
 
     void Move()
     {
-        /*float dirX, dirY;
-         dirX = Input.GetAxis("Horizontal");
-         dirY = Input.GetAxis("Vertical");
+        //float dirX, dirY;
+         //dirX = Input.GetAxis("Horizontal");
+         //dirY = Input.GetAxis("Vertical");
 
-         transform.Translate(new Vector2(dirX, dirY) * Time.deltaTime * 8f);*/
+         //transform.Translate(new Vector2(dirX, dirY) * Time.deltaTime * 8f);
 
         Vector2 newPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         transform.position = new Vector2(newPos.x , newPos.y);
-        
+
+        GetComponent<Rigidbody2D>().velocity = new Vector2(newPos.x , newPos.y);
+
     }
 
     public void GerarCor()
@@ -45,10 +51,12 @@ public class PlayerMovement : MonoBehaviour
 
         myPhotonview.RPC("GerarCor_RPC", RpcTarget.AllBuffered, r, g, b);
     }
+
     [PunRPC]
     public void GerarCor_RPC(byte r, byte g, byte b)
     {
 
         GetComponent<Renderer>().material.color = new Color32(r, g, b, 255);
     }
+
 }
