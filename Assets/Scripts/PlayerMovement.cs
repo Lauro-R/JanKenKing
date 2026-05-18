@@ -59,4 +59,27 @@ public class PlayerMovement : MonoBehaviour
         GetComponent<Renderer>().material.color = new Color32(r, g, b, 255);
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Meteoro")
+        {
+            //PhotonNetwork.Destroy(collision.gameObject.GetPhotonView());
+
+            if (PhotonNetwork.IsMasterClient)
+            {
+                GoGameOver();
+            }
+            else
+            {
+                GetComponent<PhotonView>().RPC("GoGameOver", RpcTarget.MasterClient);
+            }
+        }
+    }
+
+    [PunRPC]
+    public void GoGameOver()
+    {
+        PhotonNetwork.LoadLevel(2);
+    }
+
 }
