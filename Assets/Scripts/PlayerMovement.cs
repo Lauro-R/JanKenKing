@@ -1,11 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Photon.Pun;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 public class PlayerMovement : MonoBehaviour
 {
     PhotonView myPhotonview;
+
+    int score = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -16,6 +21,8 @@ public class PlayerMovement : MonoBehaviour
         {
             GerarCor();
         }
+
+
     }
 
     // Update is called once per frame
@@ -61,18 +68,34 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Meteoro")
+        if (myPhotonview.IsMine && collision.gameObject.tag == "Meteoro")
         {
+
+            PhotonNetwork.Destroy(collision.gameObject);
+            UpdateScore(1);
+
             //PhotonNetwork.Destroy(collision.gameObject.GetPhotonView());
 
-            if (PhotonNetwork.IsMasterClient)
+            /*if (PhotonNetwork.IsMasterClient)
             {
                 GoGameOver();
             }
             else
             {
                 GetComponent<PhotonView>().RPC("GoGameOver", RpcTarget.MasterClient);
-            }
+                }*/
+        }
+    }
+
+    void UpdateScore(int value)
+    {
+        object currentScore;
+        if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("Score", out currentScore)) //se tiver um valor Score ele entra no if com o valor na mão já
+        {
+            int newScore = (int)currentScore + value;
+            Hashtable updatedScore = new Hashtable();
+            updatedScore.Add("Score", newScore);
+            PhotonNetwork.LocalPlayer.SetCustomProperties(updatedScore);
         }
     }
 

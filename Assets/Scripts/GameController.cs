@@ -1,15 +1,35 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 using Photon.Pun;
+
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class GameController : MonoBehaviourPunCallbacks
 {
+
+    public static GameController instance;
+
+    private void Awake()
+    {
+        if (instance == null && instance != this)
+        {
+            Destroy(this.gameObject);
+        }
+        else
+        {
+            instance = this;
+        }
+    }
+
     float spawnRate = 2f;
     float spawnTime = 0;
 
+    [SerializeField]
+    Text scoreText;
+
+    int score = 0;
 
     /*[SerializeField]
     GameObject playerPrefab;*/
@@ -20,7 +40,9 @@ public class GameController : MonoBehaviourPunCallbacks
         float posY = Random.Range(-2, 2);
         Vector2 spawnPos = new Vector2(posX, posY);
         PhotonNetwork.Instantiate("Player", spawnPos, this.transform.rotation);
+        Debug.Log(PhotonNetwork.PlayerList);
         //Instantiate(playerPrefab);
+
     }
 
     // Update is called once per frame
@@ -30,6 +52,12 @@ public class GameController : MonoBehaviourPunCallbacks
         {
         CreateMeteoros();
         }
+    }
+
+    public void UpdateScore(int newScore)
+    {
+        score += newScore;
+        scoreText.text = "Score: " + score;
     }
 
     public void CreateMeteoros()
@@ -52,5 +80,18 @@ public class GameController : MonoBehaviourPunCallbacks
             spawnTime = 0;
             spawnRate = Random.Range(0.2f, 1.5f);
         }
+    }
+
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
+    {
+        string novoTexto;
+        int contador = 0;
+
+        foreach(Player player in PhotonNetwork.PlayerList)
+        {
+            contador++;
+            novoTexto += player.CustomProperties["Nick"] + ": " + player.CustomProperties["Score"] + "  ";
+        }
+        textoScore.text = novoTexto;
     }
 }

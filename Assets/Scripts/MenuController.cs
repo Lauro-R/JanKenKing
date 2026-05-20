@@ -6,6 +6,8 @@ using TMPro;
 //Library da Photon
 using Photon.Pun;
 using Photon.Realtime;
+using Hashtable = ExitGames.Client.Photon.Hashtable; //Está delineando que Hashtable significa utilizar a Hashtable da Photon
+
 public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callback, Retorno de uma Função, colocando MonoBehaviourPunCallbacks contem tudo que um monobehavior tem e também possui os callbacks da Photon
 {
 
@@ -26,7 +28,7 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
     void Start()
     {
         AbrirTela(0);
-        
+
 
     }
 
@@ -88,13 +90,15 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
         Debug.Log("7- danrandanROOM");
         mensagemRoom.text = "Entrei no " + PhotonNetwork.CurrentRoom.Name + " com " +
             PhotonNetwork.CurrentRoom.PlayerCount + " players";
+
+            SetPlayerProperties();
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
         Debug.Log("8- Falhou entrar num Room");
         joinRandomfailedMessage.text = "Não tem room disponível";
-        
+
     }
 
     public override void OnCreatedRoom()
@@ -126,7 +130,7 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
             case Telas.Salas:
                 sala.SetActive(true);
                     btnStartGame.SetActive(PhotonNetwork.IsMasterClient); //é o mesmo que o um if else para checar se é o master client, com o photon dentro do set active voce já está perguntando o true or false dentro do set active.
-                
+
                 break;
             case Telas.Usuario:
                 PhotonNetwork.ConnectUsingSettings();
@@ -177,7 +181,7 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
         {
             RoomOptions roomOptions = new RoomOptions();
             roomOptions.MaxPlayers = 2;
-            
+
             PhotonNetwork.CreateRoom(inputRoom.text, roomOptions);
         }
     }
@@ -191,11 +195,20 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
     {
         PhotonNetwork.JoinRandomRoom();
     }
-    
+
     public void StartGame()
     {
         PhotonNetwork.LoadLevel(1);
     }
+
+    void SetPlayerProperties()
+    {
+        Hashtable playerPropertiesTemp = new Hashtable();
+        playerPropertiesTemp.Add("nickname", PhotonNetwork.NickName);
+        playerPropertiesTemp.Add("Score", 0);
+        playerPropertiesTemp.Add("Id", PhotonNetwork.LocalPlayer.UserId);
+
+        PhotonNetwork.LocalPlayer.SetCustomProperties(playerPropertiesTemp); // recebe a Hashtable do jogador e envia para a Photon essa Hashtable criada quando chamar o metodo
+    }
 }
 public enum Telas { Engajamento = 0, Usuario = 1,Lobby = 2, Salas = 3 }
-
