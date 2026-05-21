@@ -83,7 +83,7 @@ public class GameController : MonoBehaviourPunCallbacks
 
 
 
-    public void DrawChoices()
+    public void DrawChoices() //To Do: Mover esse Draw Choices para um script separado utilizando o enumerator que o ivan fez pros pokemons de referencia na aula 11
     {
         Debug.Log("3. DrawChoices");
         if (MasterChoice == ChallengerChoice)
