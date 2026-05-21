@@ -104,6 +104,11 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
     public override void OnCreatedRoom()
     {
         Debug.Log("10- Sala Criada com Sucesso");
+        Hashtable roomProperties = new Hashtable();
+        roomProperties.Add("Room Name", inputRoom.text);
+        roomProperties.Add("PlayersReady", 0);
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(roomProperties);
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
@@ -129,8 +134,8 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
 
             case Telas.Salas:
                 sala.SetActive(true);
-                    btnStartGame.SetActive(PhotonNetwork.IsMasterClient); //é o mesmo que o um if else para checar se é o master client, com o photon dentro do set active voce já está perguntando o true or false dentro do set active.
-
+                btnStartGame.SetActive(false);
+                    //btnStartGame.SetActive(PhotonNetwork.IsMasterClient); //é o mesmo que o um if else para checar se é o master client, com o photon dentro do set active voce já está perguntando o true or false dentro do set active.
                 break;
             case Telas.Usuario:
                 PhotonNetwork.ConnectUsingSettings();
@@ -139,6 +144,22 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
             case Telas.Lobby:
                 lobby.SetActive(true);
                 break;
+        }
+    }
+
+    public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+    {
+        object playersReady;
+        if (PhotonNetwork.IsMasterClient && propertiesThatChanged.TryGetValue("PlayersReady", out playersReady))
+        {
+            if ((int)playersReady == PhotonNetwork.CurrentRoom.PlayerCount)
+            {
+                btnStartGame.SetActive(true);
+            }
+            else
+            {
+                btnStartGame.SetActive(false);
+            }
         }
     }
 
@@ -210,5 +231,26 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
 
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerPropertiesTemp); // recebe a Hashtable do jogador e envia para a Photon essa Hashtable criada quando chamar o metodo
     }
-}
+
+    public void GetReady(bool ready)
+    {
+        object playersReadyCount = 0;
+        if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("PlayersReady", out playersReadyCount))
+        {
+            int playerReady = (int)playersReadyCount;
+            if (ready)
+            {
+                playerReady++;
+            }
+            else
+            {
+                playerReady--;
+            }
+            Hashtable newProperties = new Hashtable();
+            newProperties.Add("PlayersReady", playerReady);
+            PhotonNetwork.CurrentRoom.SetCustomProperties(newProperties);
+            }
+        }
+    }
+
 public enum Telas { Engajamento = 0, Usuario = 1,Lobby = 2, Salas = 3 }

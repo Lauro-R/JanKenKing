@@ -41,6 +41,8 @@ MonoBehaviour:
   - RespawnSpaceship
   - GerarCor_RPC
   - GoGameOver
+  - Destruir
+  - DestruirRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

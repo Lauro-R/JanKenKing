@@ -32,6 +32,18 @@ public class PlayerMovement : MonoBehaviour
         {
             Move();
         }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if(PhotonNetwork.IsMasterClient)
+            {
+                GoGameOver();
+            }
+            else
+            {
+                myPhotonview.RPC("GoGameOver_RPC", RpcTarget.MasterClient);
+            }
+        }
     }
 
     void Move()
@@ -70,20 +82,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (myPhotonview.IsMine && collision.gameObject.tag == "Meteoro")
         {
-
-            PhotonNetwork.Destroy(collision.gameObject);
-            UpdateScore(1);
+            collision.gameObject.GetComponent<Meteoro>().Destruir();
+            //UpdateScore(1);
 
             //PhotonNetwork.Destroy(collision.gameObject.GetPhotonView());
 
-            /*if (PhotonNetwork.IsMasterClient)
-            {
-                GoGameOver();
-            }
-            else
-            {
-                GetComponent<PhotonView>().RPC("GoGameOver", RpcTarget.MasterClient);
-                }*/
+
         }
     }
 
@@ -97,6 +101,14 @@ public class PlayerMovement : MonoBehaviour
             updatedScore.Add("Score", newScore);
             PhotonNetwork.LocalPlayer.SetCustomProperties(updatedScore);
         }
+        if (PhotonNetwork.IsMasterClient && score == 3)
+        {
+            GoGameOver();
+        }
+        else
+        {
+            GetComponent<PhotonView>().RPC("GoGameOver", RpcTarget.MasterClient);
+            }
     }
 
     [PunRPC]
