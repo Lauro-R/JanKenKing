@@ -7,16 +7,16 @@ using Photon.Realtime;
 
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
-public enum GameChoices { None, Rock, Paper, Scissors }
+public enum Mao { Rock = 0, Paper = 1, Scissors = 2 }
 
 public class GameController : MonoBehaviourPunCallbacks
 {
 
-    public static GameController instance;
+    public static GameController _GameSingleton;
 
     private void Awake()
     {
-        if (instance != null && instance != this)
+        if (_GameSingleton != null && _GameSingleton != this)
         {
 
             Destroy(this.gameObject);
@@ -24,7 +24,7 @@ public class GameController : MonoBehaviourPunCallbacks
         else
         {
 
-            instance = this;
+            _GameSingleton = this;
         }
         DontDestroyOnLoad(gameObject);
     }
@@ -40,13 +40,11 @@ public class GameController : MonoBehaviourPunCallbacks
     int score = 0;
     int scoreMax = 3;
 
-    int rock = 0;
-    int paper = 1;
-    int scissors = 2;
+    public Mao MasterChoice;
+    public Mao ChallengerChoice;
 
-
-    int MasterChoice;
-    int ChallengerChoice;
+    int p1score;
+    int p2score;
 
     /*[SerializeField]
     GameObject playerPrefab;*/
@@ -70,21 +68,50 @@ public class GameController : MonoBehaviourPunCallbacks
         {
 
         CreateMeteoros();
-
         }
     }
 
-    public void UpdateScore(int newScore)
-    {
-        Debug.Log("2. UpdateScore");
+    public void UpdateScore(int player)
+        {
+        /*Debug.Log("2. UpdateScore");
         score += newScore;
-        scoreText.text = "Score: " + score;
+        scoreText.text = "Score: " + score;*/
+
+            if(player == 1)
+            {
+            p1score++;
+            }
+            else
+            {
+            p2score++;
+            }
         }
 
-
-
-    public void DrawChoices() //To Do: Mover esse Draw Choices para um script separado utilizando o enumerator que o ivan fez pros pokemons de referencia na aula 11
+    public int VerificarResultado(Mao MasterChoice, Mao ChallengerChoice)
     {
+        switch ((MasterChoice, ChallengerChoice))
+        {
+            case (Mao.Rock, Mao.Scissors):
+            case (Mao.Paper, Mao.Rock):
+            case (Mao.Scissors, Mao.Paper):
+                return 1;
+            case (Mao.Rock, Mao.Paper):
+            case (Mao.Paper, Mao.Scissors):
+            case (Mao.Scissors, Mao.Rock):
+                return 2;
+
+            default:
+                return 0;
+        }
+    }
+
+    public void Vencedor(Mao MasterChoice, Mao ChallengerChoice)
+    {
+        int resultado = VerificarResultado(MasterChoice, ChallengerChoice);
+        UpdateScore(resultado);
+
+
+        /* má pratica de check
         Debug.Log("3. DrawChoices");
         if (MasterChoice == ChallengerChoice)
         {
@@ -106,17 +133,7 @@ public class GameController : MonoBehaviourPunCallbacks
         {
             Debug.Log("3. DrawChoices P2 - Challenger != MasterChoice");
             UpdateScore(1);//Player 2 Wins
-        }
-    }
-
-    public void InputFromButton(int choice)
-    {
-        MasterChoice = choice;
-
-        if (ChallengerChoice != 0)
-        {
-            DrawChoices();
-        }
+            }*/
     }
 
     public void CreateMeteoros()

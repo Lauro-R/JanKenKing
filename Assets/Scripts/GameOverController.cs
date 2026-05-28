@@ -74,7 +74,7 @@ public class GameOverController : MonoBehaviour
     }
     public void BackMenu()
     {
-        GameController.instance.ResetSingleton();
+        GameController._GameSingleton.ResetSingleton();
         PhotonNetwork.Disconnect();
 
         SceneManager.LoadScene(0);
