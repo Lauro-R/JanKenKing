@@ -28,11 +28,21 @@ public class HandButtonManager : MonoBehaviour
             Debug.Log(valorBotao  + " " +   _GameSingleton.ChallengerChoice + "Challenger");
         }
     }
+
+    [PunRPC]
+    public void saveChoice_RPC()
+    {
+
+    }
+
     public IEnumerator CountdownDecision()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(3);
         results = _GameSingleton.VerificarResultado(_GameSingleton.MasterChoice, _GameSingleton.ChallengerChoice);
         _GameSingleton.UpdateScore(results);
-        Debug.Log("Resultado saiu!! se fodeu" + results);
+
+        Debug.Log("Resultado saiu!! " + results);
+        _GameSingleton.Vencedor(_GameSingleton.MasterChoice, _GameSingleton.ChallengerChoice);
+        Debug.Log("Vencedor foi chamado");
     }
 }

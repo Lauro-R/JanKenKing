@@ -228,6 +228,7 @@ public class MenuController : MonoBehaviourPunCallbacks  //Utilizando um callbac
         playerPropertiesTemp.Add("nickname", PhotonNetwork.NickName);
         playerPropertiesTemp.Add("Score", 0);
         playerPropertiesTemp.Add("Id", PhotonNetwork.LocalPlayer.UserId);
+        playerPropertiesTemp.Add("PlayerOrder", PhotonNetwork.LocalPlayer.ActorNumber);
 
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerPropertiesTemp); // recebe a Hashtable do jogador e envia para a Photon essa Hashtable criada quando chamar o metodo
     }
