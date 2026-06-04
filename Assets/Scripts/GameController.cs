@@ -35,10 +35,17 @@ public class GameController : MonoBehaviourPunCallbacks
     [SerializeField]
     Text scoreText;
 
+    PhotonView myPhotonView;
+
     public string nomeWon;
 
     int score = 0;
     int scoreMax = 3;
+
+    bool player1ready = false;
+    bool player2ready = false;
+
+    int results;
 
     public Mao MasterChoice;
     public Mao ChallengerChoice;
@@ -51,15 +58,19 @@ public class GameController : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
+        myPhotonView = GetComponent<PhotonView>();
         Debug.Log("0. Start");
         float posX = Random.Range(-9, 9);
         float posY = Random.Range(-2, 2);
         Vector2 spawnPos = new Vector2(posX, posY);
         PhotonNetwork.Instantiate("Player", spawnPos, this.transform.rotation);
         //Instantiate(playerPrefab);
-        AtualizarUI();
+        //AtualizarUI();
+
 
     }
+
+
 
     // Update is called once per frame
     void Update()
@@ -67,11 +78,11 @@ public class GameController : MonoBehaviourPunCallbacks
         if(PhotonNetwork.IsMasterClient)
         {
 
-        CreateMeteoros();
+        CreateMeteoros(); //spawna uma distração no background
         }
     }
 
-    public void UpdateScore(int player)
+    public void UpdateScore(int player) //Score antigo de properties deprecado
         {
         /*Debug.Log("2. UpdateScore");
         score += newScore;
@@ -85,27 +96,117 @@ public class GameController : MonoBehaviourPunCallbacks
             {
             p2score++;
             }
+
+            /*if(p1score = 3 && p2score = 3)
+            {
+
+            }*/
         }
+
+    public void EscolherMaster(Mao Escolha) //Salva o valor da escolha do Master em um Inteiro utilizando o Enum Mao
+    {
+        if(player1ready == false)//se o bool estiver marcado com falso você ainda pode escolher pedra papel ou tesoura
+        {
+        myPhotonView.RPC("EscolherMaster_RPC",RpcTarget.All,(int)Escolha);
+        }
+        else
+        {
+            Debug.Log("EscolhaMaster ja Feita");
+        }
+
+    }
+
+    public void EscolherClient(Mao Escolha)//Salva o valor da escolha do Client em um Inteiro utilizando o Enum Mao
+    {
+        if(player2ready == false)//se o bool estiver marcado com falso você ainda pode escolher pedra papel ou tesoura
+        {
+        myPhotonView.RPC("EscolherClient_RPC",RpcTarget.All,(int)Escolha);
+        }
+        else
+        {
+            Debug.Log("EscolhaClient ja Feita");
+        }
+    }
+    [PunRPC]
+    public void EscolherMaster_RPC(int Escolha)
+    {
+
+        MasterChoice = (Mao)Escolha;
+        Debug.Log(MasterChoice + "Master");
+        player1ready = true;
+        VerifReady();// verifica se as booleanas estão ambas como true
+    }
+    [PunRPC]
+    public void EscolherClient_RPC(int Escolha)
+    {
+
+        ChallengerChoice = (Mao)Escolha;
+        Debug.Log(ChallengerChoice + "Client");
+        player2ready = true;
+        VerifReady();
+    }
+
+    void VerifReady()
+    {
+        if(player1ready == true && player2ready == true )
+        {
+            int Vencedor = VerificarResultado(MasterChoice, ChallengerChoice);
+            myPhotonView.RPC("DebugVencedor",RpcTarget.All, Vencedor); //manda um debug mostrando a escolha do vencedor usando o método Verificarresultado()
+        }
+    }
+
+    [PunRPC]
+    public void DebugVencedor(int Vencedor) //metodo que decide qual jogador Venceu e manda para a cena do GameOver
+    {
+        Debug.Log("Quem venceu é o player  " + Vencedor);
+        PhotonNetwork.LoadLevel(2);
+        Debug.Log("Deu Load no Gameover pelo DebugVencedor");
+    }
+
+    public IEnumerator CountdownDecision()
+    {
+        yield return new WaitForSeconds(3);
+        results = VerificarResultado(MasterChoice, ChallengerChoice);
+
+        Debug.Log("Resultado saiu!! " + results);
+        Vencedor(MasterChoice, ChallengerChoice);
+        Debug.Log("Vencedor foi chamado");
+    }
+
+    public void VencerJogo(int Escolha)
+    {
+        photonView.RPC("VencerJogo_RPC",RpcTarget.MasterClient,(int)Escolha);
+    }
+
+    public void VencerJogo_RPC()
+    {
+
+    }
+
+    public int VerificarResultadoDefault() //Passa o Valor do VerificarResultado sem precisar acessar o MasterChoice, ChallengerChoice em outra classe
+    {
+        return VerificarResultado(MasterChoice, ChallengerChoice);
+    }
 
     public int VerificarResultado(Mao MasterChoice, Mao ChallengerChoice)
     {
         switch ((MasterChoice, ChallengerChoice))
         {
-            case (Mao.Rock, Mao.Scissors):
+            case (Mao.Rock, Mao.Scissors): //esses cases fazem o Jogador 1 Vencer (MasterChoice)
             case (Mao.Paper, Mao.Rock):
             case (Mao.Scissors, Mao.Paper):
                 return 1;
-            case (Mao.Rock, Mao.Paper):
+            case (Mao.Rock, Mao.Paper):     //esses cases fazem o Jogador 2 Vencer (ChallengerChoice)
             case (Mao.Paper, Mao.Scissors):
             case (Mao.Scissors, Mao.Rock):
                 return 2;
 
-            default:
+            default:            //se empatar ninguém vence
                 return 0;
         }
     }
 
-    public void Vencedor(Mao MasterChoice, Mao ChallengerChoice)
+    public void Vencedor(Mao MasterChoice, Mao ChallengerChoice) //Metodo Deprecado que ajudou a chegar no switch case do metodo acima
     {
         int resultado = VerificarResultado(MasterChoice, ChallengerChoice);
         UpdateScore(resultado);
@@ -222,11 +323,14 @@ public class GameController : MonoBehaviourPunCallbacks
             if ((bool)fim == true)
             {
                 PhotonNetwork.LoadLevel(2);
+                Debug.Log("Deu Load no GameOver pelo Properties");
             }
         }
     }
-    public void ResetSingleton()
+    public void ResetSingleton() //reseta o Singleton se chamado enquanto acessa o valor em outra classe
     {
+        Debug.Log("6. Entrou no reset Singleton");
         Destroy(gameObject);
+        Debug.Log("7. Destruiu o GameObject");
     }
 }

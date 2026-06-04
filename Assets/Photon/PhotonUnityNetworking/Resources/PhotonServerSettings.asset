@@ -45,6 +45,9 @@ MonoBehaviour:
   - DestruirRPC
   - saveChoiceRPC
   - saveChoice_RPC
+  - EscolherClient_RPC
+  - EscolherMaster_RPC
+  - DebugVencedor
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

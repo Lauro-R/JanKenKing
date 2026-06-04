@@ -10,6 +10,22 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class GameOverController : MonoBehaviour
 {
+    public static GameOverController _GameOverSingleton;
+
+    private void Awake()
+    {
+        if (_GameOverSingleton != null && _GameOverSingleton != this)
+        {
+
+            Destroy(this.gameObject);
+        }
+        else
+        {
+
+            _GameOverSingleton = this;
+        }
+    }
+
     [SerializeField]
     TMP_Text textoResultados;
     [SerializeField]
@@ -17,7 +33,9 @@ public class GameOverController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        MostrarResultados();
+        int Resultado = GameController._GameSingleton.VerificarResultadoDefault();
+
+        MostrarResultados(Resultado);
     }
 
     // Update is called once per frame
@@ -26,57 +44,27 @@ public class GameOverController : MonoBehaviour
 
     }
 
-
-    void MostrarResultados()
+    public void MostrarResultados(int ResultadoFinal)
     {
-        //textoWon.text = GameController.instance.nomeWon + " Venceu!";
-        object pWon;
-        if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("Won", out pWon))
+        switch (ResultadoFinal)
         {
-            textoWon.text += (string)pWon + " Venceu! ";
+            case 0:
+            textoWon.text = "Empatou!";
+                break;
+            case 1:
+            textoWon.text = "Player 1 Venceu!";
+                break;
+            case 2:
+            textoWon.text = "Player 2 Venceu!";
+                break;
         }
-
-        string textoFinal = "";
-        Player[] playersList = PhotonNetwork.PlayerList;
-        foreach (Player playerAtual in playersList)
-        {
-            /*object idPlayer;
-            if(playerAtual.CustomProperties.TryGetValue("Id", out idPlayer))
-            {
-                textoFinal += (string)idPlayer + " - ";
-            }
-            else
-            {
-                textoFinal += "0000: ";
-                }*/
-
-            object nicknamePlayer;
-            if(playerAtual.CustomProperties.TryGetValue("Nick", out nicknamePlayer))
-            {
-                textoFinal += (string)nicknamePlayer+" : ";
-            }
-            else
-            {
-                textoFinal += "nonName: ";;
-            }
-
-            object scorePlayer;
-            if  (playerAtual.CustomProperties.TryGetValue("Score", out scorePlayer))
-            {
-                textoFinal += (int)scorePlayer + "points \n";
-            }
-            else
-            {
-                textoFinal += "0 points \n";
-            }
-        }
-        textoResultados.text = textoFinal;
     }
+
     public void BackMenu()
     {
         GameController._GameSingleton.ResetSingleton();
         PhotonNetwork.Disconnect();
-
+        Debug.Log("2. BackMenu - Disconectado");
         SceneManager.LoadScene(0);
     }
 }
